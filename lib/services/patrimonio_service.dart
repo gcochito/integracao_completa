@@ -1,148 +1,91 @@
+
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
-import '../models/patrimonio_model.dart';
+import '../models/patrimonio.dart';
 
 class PatrimonioService {
+  // Para Chrome ou Windows, use localhost.
+  // Para emulador Android, normalmente use 10.0.2.2.
+  final String url = 'http://localhost:8080';
 
-  final String baseUrl = 'http://localhost:8080';
+  Future<List<Patrimonio>> listarPatrimonios({
+    String pesquisa = '',
+  }) async {
+    String endereco = '$url/api/v1/patrimonios';
 
-  // ============================
-  // LISTAR
-  // ============================
-
-  Future<List<PatrimonioModel>> listarPatrimonios() async {
-
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/v1/patrimonios'),
-    );
-
-    if (response.statusCode == 200) {
-
-      final dados = jsonDecode(response.body);
-
-      return (dados as List)
-          .map((item) => PatrimonioModel.fromJson(item))
-          .toList();
-
-    } else {
-
-      throw Exception('Erro ao carregar patrimônios');
-
+    if (pesquisa.isNotEmpty) {
+      endereco =
+          '$endereco?q=${Uri.encodeQueryComponent(pesquisa)}';
     }
+
+    final resposta = await http.get(Uri.parse(endereco));
+
+    if (resposta.statusCode == 200) {
+      final dados = jsonDecode(resposta.body);
+
+      List lista = dados;
+
+      return lista.map((item) {
+        return Patrimonio.fromJson(item);
+      }).toList();
+    }
+
+    throw Exception('Erro ao buscar patrimônios');
   }
 
-  // ============================
-  // PESQUISAR
-  // ============================
-
-  Future<List<PatrimonioModel>> pesquisarPatrimonios(
-      String termo) async {
-
-    final response = await http.get(
-      Uri.parse(
-        '$baseUrl/api/v1/patrimonios?q=${Uri.encodeComponent(termo)}',
-      ),
+  Future<Patrimonio> buscarPorId(int id) async {
+    final resposta = await http.get(
+      Uri.parse('$url/api/v1/patrimonios/$id'),
     );
 
-    if (response.statusCode == 200) {
-
-      final dados = jsonDecode(response.body);
-
-      return (dados as List)
-          .map((item) => PatrimonioModel.fromJson(item))
-          .toList();
-
-    } else {
-
-      throw Exception('Erro ao pesquisar patrimônios');
-
+    if (resposta.statusCode == 200) {
+      return Patrimonio.fromJson(
+        jsonDecode(resposta.body),
+      );
     }
+
+    throw Exception('Erro ao buscar patrimônio');
   }
 
-  // ============================
-  // DETALHES
-  // ============================
-
-  Future<PatrimonioModel> buscarPorId(int id) async {
-
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/v1/patrimonios/$id'),
-    );
-
-    if (response.statusCode == 200) {
-
-      final dados = jsonDecode(response.body);
-
-      return PatrimonioModel.fromJson(dados);
-
-    } else {
-
-      throw Exception('Erro ao buscar patrimônio');
-
-    }
-  }
-
-  // ============================
-  // CADASTRAR
-  // ============================
-
-  Future<void> cadastrar(PatrimonioModel patrimonio) async {
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/v1/patrimonios'),
+  Future<void> cadastrar(Patrimonio patrimonio) async {
+    final resposta = await http.post(
+      Uri.parse('$url/api/v1/patrimonios'),
       headers: {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(patrimonio.toJson()),
     );
 
-    if (response.statusCode != 200 &&
-        response.statusCode != 201) {
-
+    if (resposta.statusCode != 200 &&
+        resposta.statusCode != 201) {
       throw Exception('Erro ao cadastrar patrimônio');
-
     }
   }
 
-  // ============================
-  // EDITAR
-  // ============================
-
-  Future<void> editar(PatrimonioModel patrimonio) async {
-
-    final response = await http.put(
-      Uri.parse(
-        '$baseUrl/api/v1/patrimonios/${patrimonio.id}',
-      ),
+  Future<void> editar(Patrimonio patrimonio) async {
+    final resposta = await http.put(
+      Uri.parse('$url/api/v1/patrimonios/${patrimonio.id}'),
       headers: {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(patrimonio.toJson()),
     );
 
-    if (response.statusCode != 200) {
-
+    if (resposta.statusCode != 200) {
       throw Exception('Erro ao editar patrimônio');
-
     }
   }
-
-  // ============================
-  // EXCLUIR
-  // ============================
 
   Future<void> excluir(int id) async {
-
-    final response = await http.delete(
-      Uri.parse('$baseUrl/api/v1/patrimonios/$id'),
+    final resposta = await http.delete(
+      Uri.parse('$url/api/v1/patrimonios/$id'),
     );
 
-    if (response.statusCode != 200 &&
-        response.statusCode != 204) {
-
+    if (resposta.statusCode != 200 &&
+        resposta.statusCode != 204) {
       throw Exception('Erro ao excluir patrimônio');
-
     }
   }
 }

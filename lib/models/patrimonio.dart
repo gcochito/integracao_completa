@@ -1,11 +1,12 @@
-class PatrimonioModel {
-  int? id;
-  String numeroInventario;
-  String descricao;
-  String local;
-  String responsavel;
 
-  PatrimonioModel({
+class Patrimonio {
+  final int? id;
+  final String numeroInventario;
+  final String descricao;
+  final String local;
+  final String responsavel;
+
+  Patrimonio({
     this.id,
     required this.numeroInventario,
     required this.descricao,
@@ -13,8 +14,8 @@ class PatrimonioModel {
     required this.responsavel,
   });
 
-  factory PatrimonioModel.fromJson(Map<String, dynamic> json) {
-    return PatrimonioModel(
+  factory Patrimonio.fromJson(Map<String, dynamic> json) {
+    return Patrimonio(
       id: json['id'],
       numeroInventario: json['numero_inventario'] ?? '',
       descricao: json['descricao'] ?? '',

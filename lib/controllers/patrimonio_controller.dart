@@ -1,205 +1,115 @@
+
 import 'package:get/get.dart';
 
-import '../models/patrimonio_model.dart';
+import '../models/patrimonio.dart';
 import '../services/patrimonio_service.dart';
 
 class PatrimonioController extends GetxController {
-
   final PatrimonioService service = PatrimonioService();
 
-  // Lista de patrimônios
-  final patrimonios = <PatrimonioModel>[].obs;
+  final listaPatrimonios = <Patrimonio>[].obs;
 
-  // Indicador de carregamento
   final carregando = false.obs;
 
-  // Mensagem de erro
-  final erro = ''.obs;
+  final textoPesquisa = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
-
-    carregarPatrimonios();
+    listar();
   }
 
-  // ============================
-  // LISTAR
-  // ============================
-
-  Future<void> carregarPatrimonios() async {
-
+  Future<void> listar() async {
     try {
-
       carregando.value = true;
-      erro.value = '';
 
-      final resultado =
-          await service.listarPatrimonios();
+      final lista = await service.listarPatrimonios(
+        pesquisa: textoPesquisa.value,
+      );
 
-      patrimonios.assignAll(resultado);
-
+      listaPatrimonios.value = lista;
     } catch (e) {
-
-      erro.value = e.toString();
-
       Get.snackbar(
         'Erro',
         'Não foi possível carregar os patrimônios',
       );
-
     } finally {
-
       carregando.value = false;
-
     }
   }
 
-  // ============================
-  // PESQUISAR
-  // ============================
-
-  Future<void> pesquisar(String termo) async {
-
-    if (termo.isEmpty) {
-
-      carregarPatrimonios();
-
-      return;
-    }
-
-    try {
-
-      carregando.value = true;
-      erro.value = '';
-
-      final resultado =
-          await service.pesquisarPatrimonios(termo);
-
-      patrimonios.assignAll(resultado);
-
-    } catch (e) {
-
-      erro.value = e.toString();
-
-      Get.snackbar(
-        'Erro',
-        'Não foi possível realizar a pesquisa',
-      );
-
-    } finally {
-
-      carregando.value = false;
-
-    }
+  void pesquisar(String texto) {
+    textoPesquisa.value = texto;
+    listar();
   }
 
-  // ============================
-  // CADASTRAR
-  // ============================
-
-  Future<bool> cadastrar(
-      PatrimonioModel patrimonio) async {
-
+  Future<void> cadastrar(Patrimonio patrimonio) async {
     try {
-
       carregando.value = true;
 
       await service.cadastrar(patrimonio);
 
+      Get.back();
+
       Get.snackbar(
         'Sucesso',
-        'Patrimônio cadastrado!',
+        'Patrimônio cadastrado',
       );
 
-      await carregarPatrimonios();
-
-      return true;
-
+      listar();
     } catch (e) {
-
       Get.snackbar(
         'Erro',
         'Não foi possível cadastrar',
       );
-
-      return false;
-
     } finally {
-
       carregando.value = false;
-
     }
   }
 
-  // ============================
-  // EDITAR
-  // ============================
-
-  Future<bool> editar(
-      PatrimonioModel patrimonio) async {
-
+  Future<void> editar(Patrimonio patrimonio) async {
     try {
-
       carregando.value = true;
 
       await service.editar(patrimonio);
 
+      Get.back();
+
       Get.snackbar(
         'Sucesso',
-        'Patrimônio atualizado!',
+        'Patrimônio atualizado',
       );
 
-      await carregarPatrimonios();
-
-      return true;
-
+      listar();
     } catch (e) {
-
       Get.snackbar(
         'Erro',
-        'Não foi possível atualizar',
+        'Não foi possível editar',
       );
-
-      return false;
-
     } finally {
-
       carregando.value = false;
-
     }
   }
 
-  // ============================
-  // EXCLUIR
-  // ============================
-
   Future<void> excluir(int id) async {
-
     try {
-
       carregando.value = true;
 
       await service.excluir(id);
 
       Get.snackbar(
         'Sucesso',
-        'Patrimônio excluído!',
+        'Patrimônio excluído',
       );
 
-      await carregarPatrimonios();
-
+      listar();
     } catch (e) {
-
       Get.snackbar(
         'Erro',
         'Não foi possível excluir',
       );
-
     } finally {
-
       carregando.value = false;
-
     }
   }
 }
